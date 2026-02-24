@@ -1,6 +1,7 @@
 # DEGO Project - Team X
 ## Team Members
 - Ruben Vetter 70844
+- Malin Busch 70145
 ## Project Description
 Credit scoring bias analysis for DEGO course.
 ## Structure
