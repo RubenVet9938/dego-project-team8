@@ -1,2 +1,10 @@
-# dego-project-team8
-DEGO Course Project - Team 8
+# DEGO Project - Team X
+## Team Members
+- Ruben Vetter 70844
+## Project Description
+Credit scoring bias analysis for DEGO course.
+## Structure
+- ‘data/‘ - Dataset files
+- ‘notebooks/‘ - Jupyter analysis notebooks
+- ‘src/‘ - Python source code
+- ‘reports/‘ - Final deliverables
