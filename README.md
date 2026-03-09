@@ -25,6 +25,8 @@
     - [Execution Order](#execution-order)
   - [Individual Contributions](#individual-contributions)
 
+---
+
 ## Executive Summary
 
 NovaCred, a fintech company using machine learning to automate loan approval decisions, received a regulatory inquiry regarding potential discrimination in its lending practices. As an external Data Governance Task Force, we were commissioned to audit NovaCred's raw credit application dataset and evaluate whether its credit decision system is **fair**, **legally compliant**, and **built on reliable data**.
@@ -84,11 +86,11 @@ dego-project-team8/
 │   ├── DEGO-project-team8.pdf              # Presentation slides
 │   └── DEGO-project-team8-presentationlink.pdf
 │
-└── docs/
-│    └── project_tracking.md                 # Workflow tracking and milestone log
+├── docs/
+│   └── project_tracking.md                 # Workflow tracking and milestone log
+│
 └── secrets/
     └── salt.txt                            # ⚠️ Local only — excluded from GitHub
-
 ---
 
 ## Methodology
@@ -271,7 +273,7 @@ The raw dataset had **no** consent tracking, **no** retention policy, **no** aud
 
 ### Prerequisites
 ```bash
-pip install -r requirements.txt
+pip install pandas numpy matplotlib seaborn scipy statsmodels
 ```
 
 ### Execution Order
