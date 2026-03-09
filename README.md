@@ -22,6 +22,23 @@
   - [Project Description](#project-description)
   - [Presentation Video](#presentation-video)
   - [Repository Structure](#repository-structure)
+  - [Methodology](#methodology)
+  - [Dataset Overview](#dataset-overview)
+  - [Data Quality Findings](#data-quality-findings)
+  - [Bias Detection \& Fairness](#bias-detection--fairness)
+    - [Gender Bias — Confirmed](#gender-bias--confirmed)
+    - [Age-Based Approval Patterns](#age-based-approval-patterns)
+    - [Proxy Discrimination — Detected](#proxy-discrimination--detected)
+    - [Regulatory Implications](#regulatory-implications)
+  - [Privacy \& Governance Controls](#privacy--governance-controls)
+    - [PII Identified](#pii-identified)
+    - [Controls Implemented](#controls-implemented)
+    - [Governance Gaps Found (Pre-Controls)](#governance-gaps-found-pre-controls)
+  - [Remediation Summary](#remediation-summary)
+  - [Key Findings \& Conclusions](#key-findings--conclusions)
+  - [Recommendations](#recommendations)
+  - [How to Run](#how-to-run)
+    - [Prerequisites](#prerequisites)
     - [Execution Order](#execution-order)
   - [Individual Contributions](#individual-contributions)
 
@@ -31,7 +48,7 @@
 
 NovaCred, a fintech company using machine learning to automate loan approval decisions, received a regulatory inquiry regarding potential discrimination in its lending practices. As an external Data Governance Task Force, we were commissioned to audit NovaCred's raw credit application dataset and evaluate whether its credit decision system is **fair**, **legally compliant**, and **built on reliable data**.
 
-Our audit confirmed all three risk areas identified at the outset. The raw dataset contained significant data quality issues that would corrupt model outputs if left uncleaned. A confirmed gender bias was found in loan approval outcomes, with female applicants approved at a rate 15 percentage points below males — a Disparate Impact ratio of 0.77, falling below the legally required 80% threshold. The dataset also held six categories of personally identifiable information (PII) with no consent tracking, no retention policy, and no audit trail — representing violations across GDPR Articles 5, 6, 17, 22, and 30.
+Our audit confirmed all three risk areas identified at the outset. The raw dataset contained significant data quality issues that would corrupt model outputs if left uncleaned. A confirmed gender bias was found in loan approval outcomes, with female applicants approved at a rate 15 percentage points below males, a Disparate Impact ratio of 0.77, falling below the legally required 80% threshold. The dataset also held six categories of personally identifiable information (PII) with no consent tracking, no retention policy, and no audit trail, representing violations across GDPR Articles 5, 6, 17, 22, and 30.
 
 **Bottom line: the current model must not be deployed as-is.** This repository documents the full audit, all identified issues, and the governance controls we implemented to bring NovaCred toward compliance.
 
@@ -91,8 +108,9 @@ dego-project-team8/
 │
 └── secrets/
     └── salt.txt                            # ⚠️ Local only — excluded from GitHub
----
 
+```
+---
 ## Methodology
 
 The audit followed a sequential three-notebook pipeline, where each notebook builds on the output of the previous one.
