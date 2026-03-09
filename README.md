@@ -10,38 +10,6 @@
 | Governance Officer | Ruben Vetter | 70844 |
 | Product Lead | Malin Busch | 70145 |
 
-
----
-
-## Table of Contents
-
-- [DEGO Project - Team 8](#dego-project---team-8)
-  - [Team Members](#team-members)
-  - [Table of Contents](#table-of-contents)
-  - [Executive Summary](#executive-summary)
-  - [Project Description](#project-description)
-  - [Presentation Video](#presentation-video)
-  - [Repository Structure](#repository-structure)
-  - [Methodology](#methodology)
-  - [Dataset Overview](#dataset-overview)
-  - [Data Quality Findings](#data-quality-findings)
-  - [Bias Detection \& Fairness](#bias-detection--fairness)
-    - [Gender Bias — Confirmed](#gender-bias--confirmed)
-    - [Age-Based Approval Patterns](#age-based-approval-patterns)
-    - [Proxy Discrimination — Detected](#proxy-discrimination--detected)
-    - [Regulatory Implications](#regulatory-implications)
-  - [Privacy \& Governance Controls](#privacy--governance-controls)
-    - [PII Identified](#pii-identified)
-    - [Controls Implemented](#controls-implemented)
-    - [Governance Gaps Found (Pre-Controls)](#governance-gaps-found-pre-controls)
-  - [Remediation Summary](#remediation-summary)
-  - [Key Findings \& Conclusions](#key-findings--conclusions)
-  - [Recommendations](#recommendations)
-  - [How to Run](#how-to-run)
-    - [Prerequisites](#prerequisites)
-    - [Execution Order](#execution-order)
-  - [Individual Contributions](#individual-contributions)
-
 ---
 
 ## Executive Summary
@@ -147,7 +115,7 @@ The dataset is structured across four categories:
 | Spending Behavior | Category + Amount (array of objects per applicant) |
 | Loan Decision | Loan Approved, Approved Amount, Interest Rate, Rejection Reason |
 
-> ⚠️ SSN is a direct identifier and the highest-risk PII field in the dataset. `loan_purpose` and `processing_timestamp` are present in only a subset of records.
+> SSN is a direct identifier and the highest-risk PII field in the dataset. `loan_purpose` and `processing_timestamp` are present in only a subset of records.
 
 ## Data Quality Findings
 
@@ -161,10 +129,10 @@ We audited nine data quality issue categories across six standard quality dimens
 | # | Issue | Dimension | Records Affected | Action Taken |
 |---|---|---|---|---|
 | 1 | Duplicate application IDs | Uniqueness | 4 rows sharing 2 IDs (0.8%) | Removed 2 duplicates, kept first occurrence |
-| 2 | Missing values in critical fields | Completeness | 5 records (1.0%) | Flagged; not dropped |
-| 3 | Invalid values (negative credit history, malformed emails) | Validity | 2 negative credit history (0.4%), 11 malformed emails (2.2%) | Set to NaN |
+| 2 | Missing values in critical fields | Completeness | 12 records (2.4%) | Flagged; not dropped |
+| 3 | Invalid values (negative credit history, malformed emails) | Validity | 2 negative credit history (0.4%), 4 malformed emails (0.8%) | Set to NaN |
 | 4 | Inconsistent gender encoding | Consistency | 4 variants (Male/M/Female/F + 2 blanks) | Standardised to Male/Female |
-| 5 | Inconsistent date formats | Consistency | 12.0% unrecognised formats, 4 unparseable | Parsed and normalised |
+| 5 | Inconsistent date formats | Consistency | 11.2% unrecognised formats, 4 unparseable (0.8%) | Parsed and normalised |
 | 6 | Out-of-range numeric values | Validity | 1 DTI > 1, 1 negative savings, 1 zero income, 2 income outliers > 3σ | Impossible values set to NaN; outliers retained |
 | 7 | Nested spending_behavior field | Consistency | All 500 records | Exploded to 15 flat spending columns |
 | 8 | Redundant income field | Consistency | 5 records used `annual_salary` instead of `annual_income` | Merged into `annual_income` |
@@ -220,7 +188,7 @@ Under the **EU AI Act**, credit scoring is classified as a **High-Risk AI system
 
 ### PII Identified
 
-Six PII fields were present in the raw dataset:
+Seven PII fields were present in the raw dataset:
 
 | Field | PII Type | Risk Level |
 |---|---|---|
@@ -230,21 +198,19 @@ Six PII fields were present in the raw dataset:
 | `ip_address` | Quasi-identifier | Medium |
 | `date_of_birth` | Quasi-identifier | Medium |
 | `zip_code` | Quasi-identifier | Low |
+| `gender` | Quasi-identifier | Medium |
 
 ### Controls Implemented
 
 | Control | GDPR Article | EU AI Act Article | Implementation |
 |---|---|---|---|
-| Pseudonymization of Name, Email, SSN | Art. 5, 25 | — | SHA-256 hashing with secret salt |
-| Anonymization of ZIP code & DOB | Art. 5 | — | ZIP truncated to 3 digits; DOB reduced to year only |
-| IP address removed | Art. 5 (Data Minimization) | — | Column dropped entirely |
-| Sensitive spending columns removed | Art. 9 | — | Gambling, Alcohol, Adult Entertainment dropped |
-| Proxy variables removed | Art. 5 | Art. 10 | Fitness, Healthcare, Education spending dropped |
-| Consent tracking added | Art. 6, 7 | — | `spending_consent` field added |
-| Retention policy implemented | Art. 5 | — | 5-year tier (rejected), 10-year tier (approved) |
-| Right-to-erasure workflow | Art. 17 | — | Automated purge pipeline demonstrated |
-| Audit trail logging | Art. 30 | Art. 12 | Timestamped event log implemented |
-| Human-in-the-Loop architecture | Art. 22 | Art. 14 | AI now advisory only; final decision by human operator |
+| Pseudonymization of Name, Email, SSN | Art. 5, 25, 32 | — | SHA-256 hashing with secret salt |
+| Anonymization of ZIP, DOB, Gender & IP | Art. 5 | — | ZIP → first 3 digits + **, DOB → birth year only, Gender → *, IP → last octet masked |
+| Sensitive & proxy spending columns removed | Art. 6, 9 | — | Processed under contractual necessity; Healthcare, Adult Entertainment, Gambling, Gender dropped |
+| Retention policy implemented | Art. 5 | — | 7-year retention from request date; 247 overdue records routed to human review queue for deletion |
+| Right-to-erasure workflow | Art. 17 | — | PII fields set to NaN on request; anonymized decision data retained for fairness auditing |
+| Audit trail logging | Art. 30 | Art. 12 | Automated event log with 9 event codes covering full application lifecycle |
+| Human-in-the-Loop architecture | Art. 22 | Art. 14 | AI now advisory only; final decision made by human operator |
 
 ### Governance Gaps Found (Pre-Controls)
 
@@ -281,7 +247,7 @@ The raw dataset had **no** consent tracking, **no** retention policy, **no** aud
 1. **Remove proxy variables** — Exclude ZIP code and gambling spending from the model's feature set before retraining
 2. **Retrain on clean, balanced data** — Use the cleaned dataset from `01-data-quality.ipynb` and apply bias-aware training techniques
 3. **Deploy the Human-in-the-Loop architecture** — The AI should function as an advisory tool only; all final credit decisions must be made and logged by a human operator
-4. **Complete GDPR documentation** — Implement the consent, retention, and audit trail infrastructure designed in `03-privacy-demo.ipynb` in production
+4. **Complete GDPR documentation** — Implement the retention policy, audit trail, and right-to-erasure pipeline
 5. **Conduct a full post-remediation fairness audit** — After retraining, rerun the bias analysis to verify the Disparate Impact ratio has risen above 0.80
 6. **Establish ongoing monitoring** — Fairness metrics, data quality checks, and governance controls should be audited regularly, not just at launch
 
@@ -319,7 +285,7 @@ jupyter notebook notebooks/03-privacy-demo.ipynb
 
 | Name | Student ID | Role | Key Contributions |
 |---|---|---|---|
-| Michael Schneider | 71871 | Data Engineer | Data loading and JSON flattening pipeline, data quality analysis across all dimensions, cleaning and imputation strategy, export of cleaned dataset for downstream analysis, code review across all notebooks |
-| Matteo De Francesco | 71734 | Data Scientist | Gender and age bias analysis, Disparate Impact ratios, logistic regression, ZIP code and gambling proxy analysis, age × gender interaction effects, statistical significance testing, visualisations |
-| Ruben Vetter | 70844 | Governance Officer | PII identification and classification, SHA-256 pseudonymization, GDPR article mapping (Art. 5, 6, 7, 9, 17, 22, 25, 30), EU AI Act high-risk classification, governance controls, privacy notebook development |
-| Malin Busch | 70145 | Product Lead | Video presentation, project coordination, repository setup and management, README documentation, project tracking and milestone log, pull request reviews and branch merges, presentation preparation |
+| Michael Schneider | 71871 | Data Engineer | Data loading, JSON flattening, quality analysis, cleaning pipeline, dataset export |
+| Matteo De Francesco | 71734 | Data Scientist | Bias metrics, logistic regression, proxy analysis, age × gender interaction, visualisations |
+| Ruben Vetter | 70844 | Governance Officer | PII classification, pseudonymization, GDPR mapping, EU AI Act classification, privacy notebook |
+| Malin Busch | 70145 | Product Lead | Presentation, coordination, repository management, README, project tracking, PR reviews |
